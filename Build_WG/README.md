@@ -33,8 +33,7 @@ Command-Line Arguments
 ---
 
 Example Usage:
-
-`python generate_debruijn.py -o output.dot -k 5 -l 100 -a 3 target.fastq contaminant1.fastq contaminant2.fastq``
+`python generate_debruijn.py -o output.dot -k 5 -l 100 -a 3 target.fastq contaminant1.fastq contaminant2.fastq`
 
 In this command:
 - 'output.dot' is the file where the Wheeler graph will be saved.
@@ -49,5 +48,4 @@ Visualization
 After running the script, use Graphviz to view and analyze the constructed Wheeler graph. This visualization will help in understanding the relationships and overlaps between the target and contaminant genomes. 
 
 Example Usage:
-
 `dot -Tpng output.dot -o graph.png`
