@@ -2,6 +2,7 @@ import networkx as nx
 # import matplotlib.pyplot as plt
 
 DOTFILE = "./wheel.dot"
+DOTFILE = "./graphs/test-nonorg.dot"
 FASTQ_FILE = "./hw2q1_A.fastq"
 
 def query_graph(G, pattern):
@@ -47,30 +48,38 @@ def query_graph(G, pattern):
                 for path in paths:
                     if path[-1][1] == edge[0]:
                         path.append(edge)
+                        
 
     return paths
 
-def parse_fastq(fh):
-    """ Parse reads from a FASTQ filehandle.  For each read, we
-        return a name, nucleotide-string, quality-string triple. """
-    reads = []
-    while True:
-        first_line = fh.readline()
-        if len(first_line) == 0:
-            break  # end of file
-        name = first_line[1:].rstrip()
-        seq = fh.readline().rstrip()
-        fh.readline()  # ignore line starting with +
-        qual = fh.readline().rstrip()
-        reads.append((name, seq, qual))
-    return reads
-
 if __name__ == "__main__":
     G = nx.nx_pydot.read_dot(DOTFILE)
+    pattern = "CTAG"
+    paths = query_graph(G, pattern)
+    print(paths)
 
-    with open(FASTQ_FILE) as fh:
-        reads = parse_fastq(fh)
+# def parse_fastq(fh):
+#     """ Parse reads from a FASTQ filehandle.  For each read, we
+#         return a name, nucleotide-string, quality-string triple. """
+#     reads = []
+#     while True:
+#         first_line = fh.readline()
+#         if len(first_line) == 0:
+#             break  # end of file
+#         name = first_line[1:].rstrip()
+#         seq = fh.readline().rstrip()
+#         fh.readline()  # ignore line starting with +
+#         qual = fh.readline().rstrip()
+#         reads.append((name, seq, qual))
+#     return reads
 
-    for read in reads:
-        a = query_graph(G, read[1])
-        print(a)
+# if __name__ == "__main__":
+#     G = nx.nx_pydot.read_dot(DOTFILE)
+
+#     with open(FASTQ_FILE) as fh:
+#         reads = parse_fastq(fh)
+
+#     for read in reads:
+#         print(read[1])
+#         a = query_graph(G, read[1])
+#         print(a)
