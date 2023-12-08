@@ -29,36 +29,34 @@ def compare_with_ground_truth(predictions, fastq_file):
     true_positives = {0: 0, 1: 0, 2: 0}
     false_positives = {0: 0, 1: 0, 2: 0}
     false_negatives = {0: 0, 1: 0, 2: 0}
-    true_negatives = {0: 0, 1: 0, 2: 0}
     ground_truth_counts = {0: 0, 1: 0, 2: 0}
-    predicted_counts = {0: 0, 1: 0, 2: 0}  # Counts of each category in predictions
+    predicted_counts = {0: 0, 1: 0, 2: 0}
+    total_reads = 0
     ambiguous = 0
 
     with open(fastq_file, 'r') as f:
         for record in SeqIO.parse(f, "fastq"):
+            total_reads += 1
             header_parts = record.id.split('|')
             source_label = header_parts[0]
             true_organism_id = {"host": 0, "contaminant1": 1, "contaminant2": 2}.get(source_label, -1)
             ground_truth_counts[true_organism_id] += 1
 
             predicted_organism_ids = predictions.get(record.id, set())
+
             if len(predicted_organism_ids) > 1:
                 ambiguous += 1
-            else:
-                for predicted_id in predicted_organism_ids:
-                    predicted_counts[predicted_id] += 1
+                continue  # Skip ambiguous predictions for now, or implement a strategy to resolve them
 
-                for org_id in [0, 1, 2]:
-                    if org_id == true_organism_id:
-                        if org_id in predicted_organism_ids:
-                            true_positives[org_id] += 1
-                        else:
-                            false_negatives[org_id] += 1
-                    else:
-                        if org_id in predicted_organism_ids:
-                            false_positives[org_id] += 1
-                        else:
-                            true_negatives[org_id] += 1
+            predicted_organism_id = next(iter(predicted_organism_ids), -1)  # Get the single prediction or -1 if none
+            predicted_counts[predicted_organism_id] += 1
+
+            if true_organism_id == predicted_organism_id:
+                true_positives[true_organism_id] += 1
+            else:
+                false_negatives[true_organism_id] += 1
+                if predicted_organism_id != -1:
+                    false_positives[predicted_organism_id] += 1
 
     # Calculate metrics
     metrics = {}
@@ -66,7 +64,8 @@ def compare_with_ground_truth(predictions, fastq_file):
         precision = true_positives[org_id] / (true_positives[org_id] + false_positives[org_id]) if true_positives[org_id] + false_positives[org_id] > 0 else 0
         recall = true_positives[org_id] / (true_positives[org_id] + false_negatives[org_id]) if true_positives[org_id] + false_negatives[org_id] > 0 else 0
         f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-        accuracy = (true_positives[org_id] + true_negatives[org_id]) / (true_positives[org_id] + false_positives[org_id] + false_negatives[org_id] + true_negatives[org_id]) if (true_positives[org_id] + false_positives[org_id] + false_negatives[org_id] + true_negatives[org_id]) > 0 else 0
+        true_negatives = total_reads - (true_positives[org_id] + false_positives[org_id] + false_negatives[org_id])
+        accuracy = (true_positives[org_id] + true_negatives) / total_reads if total_reads > 0 else 0
 
         metrics[org_id] = {"precision": precision, "recall": recall, "f1_score": f1_score, "accuracy": accuracy}
 
@@ -85,4 +84,3 @@ if __name__ == "__main__":
     fastq_file = 'mock_data.fastq'
     predictions = query_reads("wheeler_graph.dot", fastq_file)
     compare_with_ground_truth(predictions, fastq_file)
-
