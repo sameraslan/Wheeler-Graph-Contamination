@@ -39,7 +39,7 @@ def query_graph(G, pattern):
 
     # If at least one valid path is found, return the organism IDs from any of the paths
     if paths:
-        print(paths)
+        #print(paths)
         return paths[0][1]  # Only need to return the IDs from one path as all paths will have the same IDs
 
     return set()
@@ -87,13 +87,3 @@ def read_input_file(filename):
     quality_scores = [[ord(char) - 33 for char in line.strip()] for line in quality_chars]
 
     return reads, quality_scores
-
-
-# if __name__ == "__main__":
-#     G = nx.nx_pydot.read_dot(DOTFILE)
-
-#     reads, quality_scores = read_input_file(FASTQ_FILE)
-
-#     for read in reads:
-#         paths, organism_ids = query_graph(G, read)
-#         print(organism_ids)
