@@ -18,17 +18,21 @@ def build_wheeler_graph(fasta_files):
 def query_reads(graph_file, fastq_file):
     G = nx.nx_pydot.read_dot(graph_file)
     predictions = {}
+    recognized_reads_count = 0
     with open(fastq_file, 'r') as f:
         for record in SeqIO.parse(f, "fastq"):
             read = str(record.seq)
             organism_ids = query_graph(G, read)
-            predictions[record.id] = organism_ids  # Store predictions by read ID
-    return predictions
+            predictions[record.id] = organism_ids
+            if organism_ids:
+                recognized_reads_count += 1
+    return predictions, recognized_reads_count
 
 def compare_with_ground_truth(predictions, fastq_file):
     true_positives = {0: 0, 1: 0, 2: 0}
     false_positives = {0: 0, 1: 0, 2: 0}
     false_negatives = {0: 0, 1: 0, 2: 0}
+    true_negatives = {0: 0, 1: 0, 2: 0}
     ground_truth_counts = {0: 0, 1: 0, 2: 0}
     predicted_counts = {0: 0, 1: 0, 2: 0}
     total_reads = 0
@@ -46,9 +50,9 @@ def compare_with_ground_truth(predictions, fastq_file):
 
             if len(predicted_organism_ids) > 1:
                 ambiguous += 1
-                continue  # Skip ambiguous predictions for now, or implement a strategy to resolve them
+                continue
 
-            predicted_organism_id = next(iter(predicted_organism_ids), -1)  # Get the single prediction or -1 if none
+            predicted_organism_id = next(iter(predicted_organism_ids), -1)
             predicted_counts[predicted_organism_id] += 1
 
             if true_organism_id == predicted_organism_id:
@@ -58,18 +62,18 @@ def compare_with_ground_truth(predictions, fastq_file):
                 if predicted_organism_id != -1:
                     false_positives[predicted_organism_id] += 1
 
-    # Calculate metrics
+    for org_id in [0, 1, 2]:
+        true_negatives[org_id] = total_reads - (true_positives[org_id] + false_positives[org_id] + false_negatives[org_id])
+
     metrics = {}
     for org_id in [0, 1, 2]:
         precision = true_positives[org_id] / (true_positives[org_id] + false_positives[org_id]) if true_positives[org_id] + false_positives[org_id] > 0 else 0
         recall = true_positives[org_id] / (true_positives[org_id] + false_negatives[org_id]) if true_positives[org_id] + false_negatives[org_id] > 0 else 0
         f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-        true_negatives = total_reads - (true_positives[org_id] + false_positives[org_id] + false_negatives[org_id])
-        accuracy = (true_positives[org_id] + true_negatives) / total_reads if total_reads > 0 else 0
+        accuracy = (true_positives[org_id] + true_negatives[org_id]) / total_reads if total_reads > 0 else 0
 
         metrics[org_id] = {"precision": precision, "recall": recall, "f1_score": f1_score, "accuracy": accuracy}
 
-    # Print total ground truth counts, total predicted counts, and metrics for each category
     for org_id in [0, 1, 2]:
         category = {0: "Host", 1: "Contaminant1", 2: "Contaminant2"}[org_id]
         print(f"Total Ground Truth for {category}: {ground_truth_counts[org_id]}")
@@ -82,5 +86,6 @@ if __name__ == "__main__":
     fasta_files = ['host.fasta', 'contaminant1.fasta', 'contaminant2.fasta']
     build_wheeler_graph(fasta_files)
     fastq_file = 'mock_data.fastq'
-    predictions = query_reads("wheeler_graph.dot", fastq_file)
+    predictions, recognized_reads_count = query_reads("wheeler_graph.dot", fastq_file)
+    print(f"Number of reads recognized by the graph: {recognized_reads_count}")
     compare_with_ground_truth(predictions, fastq_file)
