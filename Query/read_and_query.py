@@ -1,85 +1,53 @@
 import networkx as nx
-# import matplotlib.pyplot as plt
 
-DOTFILE = "./wheel.dot"
-DOTFILE = "./graphs/test-nonorg.dot"
-FASTQ_FILE = "./hw2q1_A.fastq"
+DOTFILE = "./graphs/test.dot"
+
+def extract_nucleotide(label):
+    label = label.strip('\"')
+    return label.split()[0]  # ex. returns 'A'
+
+def extract_organism_ids(label):
+    label = label.strip('\"')
+    ids_part = label.split('(')[-1].strip(')')
+    return set([int(id) for id in ids_part.split(',')])  # ex. returns {0, 1, 3}
 
 def query_graph(G, pattern):
-    """
-    Given a Wheeler Graph G and a pattern P, return the organism IDs that match the pattern.
-    Doesn't really use the consecutive property of the pattern, but it's a start.
-    
-    Args:
-        G: a wheeler graph with labels
-        pattern: string of pattern to be exactly matched
-
-    Returns:
-        List of path graphs
-
-    """
-
-    matching_edges = []
     paths = []
+    organism_ids_sets = []
 
-    def matching_func(edge, char, prev_matching_edges):
-        if edge[2]['label'] == char:
-            if len(prev_matching_edges) == 0:
-                return True
-            else:
-                return edge[0] in [e[1] for e in prev_matching_edges]
-        return False
-    
+    # Look for starting nodes that correspond to the first char of the pattern
+    for node in G.nodes:
+        for edge in G.edges(node, data=True):
+            if extract_nucleotide(edge[2]['label']) == pattern[0]:
+                paths.append(([node, edge[1]], extract_organism_ids(edge[2]['label'])))
 
-    for pattern_idx in range(len(pattern) - 1, 0, -1):
-        new_matching_edges = list(filter(lambda e: matching_func(e, pattern[pattern_idx], matching_edges), G.edges.data()))
-        
-        # If no matching edges, return empty list
-        if len(new_matching_edges) == 0:
+    # For each path, extend it by adding edges that match the next char of the pattern
+    for char in pattern[1:]:
+        new_paths = []
+        for path, ids in paths:
+            last_node = path[-1]
+            for edge in G.edges(last_node, data=True):
+                if extract_nucleotide(edge[2]['label']) == char:
+                    target_node = edge[1]
+                    new_path = path + [target_node]
+                    new_ids = ids & extract_organism_ids(edge[2]['label'])  # Intersecting organism IDs
+                    if new_ids:  # Only consider the path if there are common organism IDs
+                        new_paths.append((new_path, new_ids))
+
+        paths = new_paths
+        if not paths:
             return []
-    
-        
-        if len(paths) == 0:
-            # If path is empty, append all matching edges
-            paths = [(e[0], e[1]) for e in new_matching_edges]
-        else:
-            # Append paths
-            for edge in new_matching_edges:
-                for path in paths:
-                    if path[-1][1] == edge[0]:
-                        path.append(edge)
-                        
 
-    return paths
+    print(paths)
+    # Collect all unique organism IDs from valid paths
+    valid_organism_ids = set()
+    for _, ids in paths:
+        valid_organism_ids.update(ids)
+
+    return valid_organism_ids
 
 if __name__ == "__main__":
     G = nx.nx_pydot.read_dot(DOTFILE)
     pattern = "CTAG"
-    paths = query_graph(G, pattern)
-    print(paths)
-
-# def parse_fastq(fh):
-#     """ Parse reads from a FASTQ filehandle.  For each read, we
-#         return a name, nucleotide-string, quality-string triple. """
-#     reads = []
-#     while True:
-#         first_line = fh.readline()
-#         if len(first_line) == 0:
-#             break  # end of file
-#         name = first_line[1:].rstrip()
-#         seq = fh.readline().rstrip()
-#         fh.readline()  # ignore line starting with +
-#         qual = fh.readline().rstrip()
-#         reads.append((name, seq, qual))
-#     return reads
-
-# if __name__ == "__main__":
-#     G = nx.nx_pydot.read_dot(DOTFILE)
-
-#     with open(FASTQ_FILE) as fh:
-#         reads = parse_fastq(fh)
-
-#     for read in reads:
-#         print(read[1])
-#         a = query_graph(G, read[1])
-#         print(a)
+    organism_ids = query_graph(G, pattern)
+    print(organism_ids)

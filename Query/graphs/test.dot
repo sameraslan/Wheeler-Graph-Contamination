@@ -18,5 +18,4 @@ strict digraph  {
 	S7 -> S0 [ label = "C (0,1,3)" ];
 	S9 -> S7 [ label = "A (2)" ];
 	S0 -> S3 [ label = "C (0,1,3)" ];
-	S7 -> S0 [ label = "G (2)" ];
 }
