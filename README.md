@@ -20,7 +20,7 @@ This command should have you set up for running any of the scripts in this repos
 
 For running individual scripts, `cd` into the desired subfolder and take a look at the README.md file there for specific instructions.
 
-For testing the entire pipeline, FASTA files -> Wheeler Graph -> Querying FASTQ file -> Results, run `test.py` from the root directory.
+For testing the entire pipeline, FASTA files -> Wheeler Graph -> Querying FASTQ file -> Results, run `test.py` from the root directory (this can take up to a couple of minutes).
 
 ---
 
