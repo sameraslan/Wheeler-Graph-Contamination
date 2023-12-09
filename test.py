@@ -125,7 +125,7 @@ def display_results_table(ground_truth_counts, predicted_counts, metrics, ambigu
     table = tabulate(table_data, headers=headers, tablefmt="pretty")
     print(table)
 
-# Main function to run the entire pipeline.
+# Main function to run the full pipeline.
 if __name__ == "__main__":
     generate_mock_data()
     fasta_files = ['host.fasta', 'contaminant1.fasta', 'contaminant2.fasta']

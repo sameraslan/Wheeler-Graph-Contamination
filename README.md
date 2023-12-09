@@ -8,7 +8,7 @@ This repository introduces a reference-guided approach for contamination detecti
 
 ## Prepare the Environment
 
-Before running any of the code, make sure to 
+Before running any of the code, make sure to
 
 From the root directory, run `source wheeler_graph_env/bin/activate`
 
@@ -26,6 +26,6 @@ For testing the entire pipeline, FASTA files -> Wheeler Graph -> Querying FASTQ 
 
 ## Credit
 
-The build code is built upon this amazing wheeler graph repo: [https://github.com/Kuanhao-Chao/Wheeler_Graph_Toolkit](https://github.com/Kuanhao-Chao/Wheeler_Graph_Toolkit)
+The build de bruijn graph code is built upon this amazing wheeler graph repo: [https://github.com/Kuanhao-Chao/Wheeler_Graph_Toolkit](https://github.com/Kuanhao-Chao/Wheeler_Graph_Toolkit)
 
 Check it out to learn more about recognizing and generating all sorts of wheeler graphs!

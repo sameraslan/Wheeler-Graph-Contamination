@@ -84,5 +84,5 @@ labels = ['host', 'contaminant1', 'contaminant2']
 for file_name, seq_len, label in zip(fasta_files, sequence_lengths, labels):
     generate_fasta(file_name, seq_len, gc_contents[label], motifs[label], 1)
 
-# Generate a FASTQ file simulating sequencing reads from the generated FASTA files
+# Generate a FASTQ file simulating sequencing reads from the generated FASTA file(s)
 generate_fastq(fasta_files, labels, 'mock_data.fastq', 50, 500)  # Read length 50, 500 reads per fasta file
