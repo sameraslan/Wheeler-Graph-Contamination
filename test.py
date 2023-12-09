@@ -12,7 +12,7 @@ def generate_mock_data():
     subprocess.run(["python3", os.path.join(current_script_path, "Datasets", "generate_mock_genomic_data.py")])
 
 def build_wheeler_graph(fasta_files):
-    args = ["python3", os.path.join(current_script_path, "Build_WG", "build_debruijn.py"), "-o", "wheeler_graph.dot"] + fasta_files
+    args = ["python3", os.path.join(current_script_path, "Build_WG", "build_test.py"), "-o", "wheeler_graph.dot"] + fasta_files
     subprocess.run(args)
 
 def query_reads(graph_file, fastq_file):

@@ -47,7 +47,7 @@ def main(argv):
     kmer_dic = {}
     organism_id = 0  # Starting organism ID
     for fasta_file in args:
-        process_fasta_file(fasta_file, k, seqLen, alnNum, organism_id, kmer_dic)
+        process_fasta_file(fasta_file, seqLen, alnNum, organism_id, kmer_dic)
         organism_id += 1  # Increment for the next file
 
     print("outfile: ", outfile)
@@ -58,16 +58,15 @@ def main(argv):
     fw = open(outfile, "a")
     fw.write("strict digraph  {\n")
     visited = []  # List for visited nodes.
-    bfs(visited, kmer_dic["$"], fw)
+    start_node_id = "S0"  # assuming the graph starts with the first nucleotide
+    bfs(visited, kmer_dic[start_node_id], fw)
     fw.write("}\n")
     fw.close()
 
-def process_fasta_file(fasta_file, k, seqLen, alnNum, organism_id, kmer_dic):
+def process_fasta_file(fasta_file, seqLen, alnNum, organism_id, kmer_dic):
     alignment = AlignIO.read(fasta_file, "fasta")
     alignment = alignment[:alnNum]
-    alignment_len = alignment.get_alignment_length()
     seq_number = len(alignment)
-    kmer_set = set()
 
     for row_idx in range(seq_number):
         row_seq = str(alignment[row_idx].seq)
@@ -78,37 +77,22 @@ def process_fasta_file(fasta_file, k, seqLen, alnNum, organism_id, kmer_dic):
             lcl_seqLen = seqLen
         row_seq_parsed = row_seq_parsed[:lcl_seqLen] + "$"
 
-        for i in range(lcl_seqLen + 1):
-            node_kmer = row_seq_parsed[i:i + k]
-            kmer_set.add(node_kmer)
+        prev_node = None
+        for i, nucleotide in enumerate(row_seq_parsed):
+            node_id = f"S{i}"
+            if node_id not in kmer_dic:
+                new_node = n.node(node_id, nucleotide, len(row_seq_parsed), {organism_id})
+                kmer_dic[node_id] = new_node
+            else:
+                kmer_dic[node_id].add_organism_id(organism_id)
 
-    # Constructing and updating nodes with organism ID.
-    node_idx = 0
-    for node_kmer in kmer_set:
-        if node_kmer in kmer_dic:
-            kmer_dic[node_kmer].add_organism_id(organism_id)  # If the node already exists, we just add the organism ID (for quick query later)
-        else:
-            new_node = n.node(node_idx, node_kmer, alignment_len, {organism_id})
-            node_idx += 1
-            kmer_dic[node_kmer] = new_node
-
-    # Constructing the graph.
-    for row_idx in range(seq_number):
-        row_seq = str(alignment[row_idx].seq)
-        row_seq_parsed = row_seq.replace("-", "")
-        if seqLen == -1 or seqLen > len(row_seq_parsed):
-            lcl_seqLen = len(row_seq_parsed)
-        else:
-            lcl_seqLen = seqLen
-        row_seq_parsed = row_seq_parsed[:lcl_seqLen] + "$"
-        prev_node = ""
-        for i in range(lcl_seqLen + 1):
-            node_kmer = row_seq_parsed[i:i + k]
-            curr_node = kmer_dic[node_kmer]
-            if prev_node != "":
-                curr_node.add_child(prev_node)
-                prev_node.add_parent(curr_node)
+            curr_node = kmer_dic[node_id]
+            if prev_node:
+                prev_node.add_child(curr_node)  # Connect the previous node to the current node
+                curr_node.add_parent(prev_node)  # Connect the current node to the previous node
             prev_node = curr_node
+
+
 
 def bfs(visited, node, fw):
     visited.append(node)
