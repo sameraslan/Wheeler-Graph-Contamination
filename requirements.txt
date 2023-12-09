@@ -1,4 +1,0 @@
-biopython
-graphwiz
-networkx
-pydot
