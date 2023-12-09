@@ -1,16 +1,17 @@
 import networkx as nx
 
-DOTFILE = "./graphs/test.dot"
-
+# Function to extract the nucleotide character from a graph edge label
 def extract_nucleotide(label):
     label = label.strip('\"')
     return label.split()[0]  # ex. returns 'A'
 
+# Function to extract organism IDs from a graph edge label
 def extract_organism_ids(label):
     label = label.strip('\"')
     ids_part = label.split('(')[-1].strip(')')
     return set([int(id) for id in ids_part.split(',')])  # ex. returns {0, 1, 3}
 
+# Function to query the De Bruijn graph for a given pattern
 def query_graph(G, pattern):
     paths = []
 
@@ -43,12 +44,6 @@ def query_graph(G, pattern):
         return paths[0][1]  # Only need to return the IDs from one path as all paths will have the same IDs
 
     return set()
-
-if __name__ == "__main__":
-    G = nx.nx_pydot.read_dot(DOTFILE)
-    pattern = "CTAGG"
-    organism_ids = query_graph(G, pattern)
-    print(f"Organism(s) with this Pattern: {organism_ids}")
 
 # Ensure valid fatsq file
 def is_valid_input_file(input):
@@ -87,3 +82,11 @@ def read_input_file(filename):
     quality_scores = [[ord(char) - 33 for char in line.strip()] for line in quality_chars]
 
     return reads, quality_scores
+
+# Below main is to test on individual patterns
+if __name__ == "__main__":
+    DOTFILE = "./graphs/example.dot"
+    G = nx.nx_pydot.read_dot(DOTFILE)
+    pattern = "CTAGG"
+    organism_ids = query_graph(G, pattern)
+    print(f"Organism(s) with this Pattern: {organism_ids}")

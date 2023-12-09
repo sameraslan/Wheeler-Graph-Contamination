@@ -2,20 +2,22 @@
 
 ---
 
-Overview
+# Overview
+
 This folder contains the files for building a wheeler graph, specifically a De Bruijn graph from one or multiple FASTA files. In our specific contamination use case, a common scenario would be to have an input file set of one target genome FASTA and one or multiple contaminant genome FASTA files. The resultant wheeler graph is constructed from these multiple target and contaminant FASTA files, where each edge in the graph is labeled with a nucleotide, along with a set of corresponding organisms that the label came from. For example, the notation 'S10 -> S1 [ label = "A (0,1,3)" ];' indicates that the edge from Node 10 to Node 1 has the label 'A' and is associated with organisms 0, 1, and 3.
 
 ---
 
-Prerequisites
+# Prerequisites
 
-- Python installed on your system.
+If you are in the wheeler_graph_env then you don't need to worry about this. Otherwise, you need:
+
 - Biopython library, installable via `pip install biopython`.
 - Graphviz library (for optional visualization), installable via `pip install graphviz`.
 
 ---
 
-Running the Script
+# Running the Script
 
 Use the following command structure in your terminal:
 
@@ -33,8 +35,9 @@ Command-Line Arguments
 
 ---
 
-Example Usage:
-`python generate_debruijn.py -o output.dot -k 5 -l 100 -a 3 target.fasta contaminant1.fasta contaminant2.fasta`
+# Example Usage:
+
+`python build_debruijn.py -o output.dot -k 5 -l 100 -a 3 ./data/human.fasta ./data/mycoplasma.fasta ./data/ureaplasma.fasta`
 
 In this command:
 
@@ -45,7 +48,7 @@ In this command:
 
 ---
 
-Visualization
+# Visualization
 
 After running the script, use Graphviz to view and analyze the constructed Wheeler graph. This visualization will help in understanding the relationships and overlaps between the target and contaminant genomes.
 
